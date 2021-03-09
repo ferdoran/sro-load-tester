@@ -5,11 +5,27 @@ import (
 	"github.com/ferdoran/go-sro-framework/network"
 	"github.com/ferdoran/go-sro-framework/network/opcode"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 type ShardListRequest struct {
 	WantedShardName string
 	isPlaying       bool
+}
+
+const ConfigKeyWantedShardName = "flows.config.shard-list-request.wanted-shard-name"
+
+func NewShardListRequestFlow() *ShardListRequest {
+	wantedShardName := viper.GetString(ConfigKeyWantedShardName)
+
+	if wantedShardName == "" {
+		logrus.Panicf("property is empty: %s", ConfigKeyWantedShardName)
+	}
+
+	return &ShardListRequest{
+		WantedShardName: wantedShardName,
+		isPlaying:       false,
+	}
 }
 
 func (s ShardListRequest) logPrefix() string {
@@ -22,7 +38,7 @@ func (s *ShardListRequest) IsPlaying() bool {
 
 func (s *ShardListRequest) Play(gatewayClient, agentClient *client.Client, globalState map[string]interface{}) {
 	s.isPlaying = true
-	logrus.Infof("%s, sending shard list request", s.logPrefix())
+	logrus.Infof("%s sending shard list request", s.logPrefix())
 	p := network.EmptyClientPacket()
 	p.Encrypted = true
 	p.MessageID = opcode.ShardlistRequest

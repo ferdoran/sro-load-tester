@@ -7,21 +7,20 @@ import (
 )
 
 const (
-	ConfigKeyShardName = "flows.login.shard_name"
-	ConfigKeyUser      = "flows.login.user"
-	ConfigKeyPassword  = "flows.login.password"
+	ConfigKeyShardName = "flows.config.login.shard_name"
+	ConfigKeyUser      = "flows.config.login.user"
+	ConfigKeyPassword  = "flows.config.login.password"
 )
 
-type LoginFlow struct {
-	CurrentStep int
-	shardName   string
-	user        string
-	password    string
-	subFlows    [2]Flow
-	isPlaying   bool
+type Login struct {
+	shardName string
+	user      string
+	password  string
+	subFlows  [2]Flow
+	isPlaying bool
 }
 
-func NewLoginFlow() *LoginFlow {
+func NewLoginFlow() *Login {
 	shardName := viper.GetString(ConfigKeyShardName)
 	user := viper.GetString(ConfigKeyUser)
 	password := viper.GetString(ConfigKeyPassword)
@@ -32,34 +31,33 @@ func NewLoginFlow() *LoginFlow {
 
 	// Init Steps
 	steps := [2]Flow{
-		&ShardListPing{},
-		&ShardListRequest{WantedShardName: shardName},
+		NewShardListPingFlow(),
+		NewShardListRequestFlow(),
 	}
 
-	return &LoginFlow{
-		CurrentStep: 0,
-		shardName:   shardName,
-		user:        user,
-		password:    password,
-		subFlows:    steps,
-		isPlaying:   false,
+	return &Login{
+		shardName: shardName,
+		user:      user,
+		password:  password,
+		subFlows:  steps,
+		isPlaying: false,
 	}
 
 }
 
-func (f LoginFlow) Name() string {
+func (f Login) Name() string {
 	return "login"
 }
 
-func (f LoginFlow) logPrefix() string {
+func (f Login) logPrefix() string {
 	return "[LOGIN FLOW]::"
 }
 
-func (f *LoginFlow) IsPlaying() bool {
+func (f *Login) IsPlaying() bool {
 	return f.isPlaying
 }
 
-func (f *LoginFlow) Play(gatewayClient, agentClient *client.Client, globalState map[string]interface{}) {
+func (f *Login) Play(gatewayClient, agentClient *client.Client, globalState map[string]interface{}) {
 	f.isPlaying = true
 	logrus.Infof("%s connecting to gateway server", f.logPrefix())
 	gatewayClient.Connect()

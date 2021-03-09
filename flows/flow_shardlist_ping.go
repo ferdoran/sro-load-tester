@@ -11,6 +11,10 @@ type ShardListPing struct {
 	isPlaying bool
 }
 
+func NewShardListPingFlow() *ShardListPing {
+	return &ShardListPing{isPlaying: false}
+}
+
 func (s ShardListPing) logPrefix() string {
 	return "[SHARD LIST PING]::"
 }

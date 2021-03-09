@@ -25,7 +25,7 @@ func main() {
 	availableFlows := make(map[string]flows.Flow)
 	availableFlows["login"] = flows.NewLoginFlow()
 	// 3. Play flows
-	flows := viper.GetStringSlice("playFlows")
+	flows := viper.GetStringSlice("flows.active")
 
 	logrus.Infof("found flows: %v", flows)
 
