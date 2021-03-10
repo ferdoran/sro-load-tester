@@ -1,15 +1,17 @@
 package main
 
 import (
-	"github.com/ferdoran/go-sro-framework/client"
 	"github.com/ferdoran/sro-load-tester/flows"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
+var AvailableFlows = make(map[string]flows.Flow)
+
 func main() {
 	// 1. Load config
 	initConfig()
+	//logrus.SetLevel(logrus.DebugLevel)
 	logrus.SetFormatter(&logrus.TextFormatter{
 		ForceColors:               true,
 		EnvironmentOverrideColors: true,
@@ -17,24 +19,16 @@ func main() {
 		TimestampFormat:           "2006-01-01 15:04:05.000",
 	})
 
-	gatewayClient := client.NewClient(viper.GetString("gateway.host"), viper.GetInt("gateway.port"), "SR_Client")
-	agentClient := client.NewClient(viper.GetString("agent.host"), viper.GetInt("agent.port"), "SR_Client")
-	sharedState := make(map[string]interface{})
-
 	// 2. Initialize flows
-	availableFlows := make(map[string]flows.Flow)
-	availableFlows["login"] = flows.NewLoginFlow()
+	AvailableFlows["login"] = flows.NewLoginFlow()
+
 	// 3. Play flows
 	flows := viper.GetStringSlice("flows.active")
 
 	logrus.Infof("found flows: %v", flows)
 
-	for _, flow := range flows {
-		if f, exists := availableFlows[flow]; exists {
-			logrus.Infof("playing flow %s", f.Name())
-			f.Play(gatewayClient, agentClient, sharedState)
-		}
-	}
+	runner := NewRunner(flows)
+	runner.Start()
 }
 
 func initConfig() {
@@ -46,6 +40,9 @@ func initConfig() {
 	viper.SetDefault("gateway.port", 15779)
 	viper.SetDefault("agent.host", "127.0.0.1")
 	viper.SetDefault("agent.port", 15882)
+	viper.SetDefault("config.duration", "60s")
+	viper.SetDefault("config.reschedule-timeout", "50ms")
+	viper.SetDefault("config.concurrent-clients", 10)
 
 	err := viper.ReadInConfig()
 

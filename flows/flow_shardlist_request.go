@@ -38,7 +38,7 @@ func (s *ShardListRequest) IsPlaying() bool {
 
 func (s *ShardListRequest) Play(gatewayClient, agentClient *client.Client, globalState map[string]interface{}) {
 	s.isPlaying = true
-	logrus.Infof("%s sending shard list request", s.logPrefix())
+	logrus.Debugf("%s sending shard list request", s.logPrefix())
 	p := network.EmptyClientPacket()
 	p.Encrypted = true
 	p.MessageID = opcode.ShardlistRequest
@@ -70,7 +70,7 @@ func (s *ShardListRequest) Play(gatewayClient, agentClient *client.Client, globa
 					logrus.Errorf("%s failed to read farm name", s.logPrefix())
 				}
 
-				logrus.Infof("%s received farm with id = %d, name = %s", s.logPrefix(), farmID, farmName)
+				logrus.Debugf("%s received farm with id = %d, name = %s", s.logPrefix(), farmID, farmName)
 			}
 
 			for {
@@ -116,10 +116,10 @@ func (s *ShardListRequest) Play(gatewayClient, agentClient *client.Client, globa
 					logrus.Errorf("%s failed to read shard's farm id", s.logPrefix())
 				}
 
-				logrus.Infof("%s received shard with id = %d, name = %s, online count = %d, capacity = %d, is operating = %t, farm id = %d", s.logPrefix(), shardID, shardName, shardOnlineCount, capacity, shardIsOperating, farmId)
+				logrus.Debugf("%s received shard with id = %d, name = %s, online count = %d, capacity = %d, is operating = %t, farm id = %d", s.logPrefix(), shardID, shardName, shardOnlineCount, capacity, shardIsOperating, farmId)
 
 				if s.WantedShardName == shardName {
-					logrus.Infof("%s found wanted shard: %s", s.logPrefix(), s.WantedShardName)
+					logrus.Debugf("%s found wanted shard: %s", s.logPrefix(), s.WantedShardName)
 					globalState["shard.id"] = shardID
 					globalState["shard.name"] = shardName
 				}
@@ -134,4 +134,11 @@ func (s *ShardListRequest) Play(gatewayClient, agentClient *client.Client, globa
 
 func (s ShardListRequest) Name() string {
 	return "shard-list-request"
+}
+
+func (s *ShardListRequest) Clone() Flow {
+	return &ShardListRequest{
+		WantedShardName: s.WantedShardName,
+		isPlaying:       false,
+	}
 }

@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	ConfigKeyShardName = "flows.config.login.shard_name"
+	ConfigKeyShardName = "flows.config.login.shard-name"
 	ConfigKeyUser      = "flows.config.login.user"
 	ConfigKeyPassword  = "flows.config.login.password"
 )
@@ -42,7 +42,6 @@ func NewLoginFlow() *Login {
 		subFlows:  steps,
 		isPlaying: false,
 	}
-
 }
 
 func (f Login) Name() string {
@@ -59,13 +58,26 @@ func (f *Login) IsPlaying() bool {
 
 func (f *Login) Play(gatewayClient, agentClient *client.Client, globalState map[string]interface{}) {
 	f.isPlaying = true
-	logrus.Infof("%s connecting to gateway server", f.logPrefix())
+	logrus.Debugf("%s connecting to gateway server", f.logPrefix())
 	gatewayClient.Connect()
-
+	logrus.Debugf("%s why don't you come here?", f.logPrefix())
 	for _, flow := range f.subFlows {
-		logrus.Infof("%s playing sub flow %s", f.logPrefix(), flow.Name())
+		logrus.Debugf("%s playing sub flow %s", f.logPrefix(), flow.Name())
 		flow.Play(gatewayClient, agentClient, globalState)
 	}
 
 	f.isPlaying = false
+}
+
+func (f *Login) Clone() Flow {
+	return &Login{
+		shardName: f.shardName,
+		user:      f.user,
+		password:  f.password,
+		subFlows: [2]Flow{
+			NewShardListPingFlow(),
+			NewShardListRequestFlow(),
+		},
+		isPlaying: false,
+	}
 }

@@ -1,0 +1,20 @@
+{
+  "flows": {
+    "active": ["login"],
+    "config": {
+      "login": {
+        "shard-name": "GoSRO",
+        "user": "test",
+        "password": "test123"
+      },
+      "shard-list-request": {
+        "wanted-shard-name": "GoSRO"
+      }
+    }
+  },
+  "config": {
+    "concurrent-clients": 10,
+    "duration": "60s",
+    "reschedule-timeout": "10ms"
+  }
+}

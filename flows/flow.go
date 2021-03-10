@@ -6,4 +6,5 @@ type Flow interface {
 	Name() string
 	Play(gatewayClient *client.Client, agentClient *client.Client, globalState map[string]interface{})
 	IsPlaying() bool
+	Clone() Flow
 }

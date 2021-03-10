@@ -25,7 +25,7 @@ func (s ShardListPing) IsPlaying() bool {
 
 func (s *ShardListPing) Play(gatewayClient, agentClient *client.Client, globalState map[string]interface{}) {
 	s.isPlaying = true
-	logrus.Infof("%s sending shard list ping", s.logPrefix())
+	logrus.Debugf("%s sending shard list ping", s.logPrefix())
 	p := network.EmptyClientPacket()
 	p.Encrypted = true
 	p.MessageID = opcode.ShardlistPing
@@ -50,7 +50,7 @@ func (s *ShardListPing) Play(gatewayClient, agentClient *client.Client, globalSt
 					logrus.Errorf("%s failed to read farm ip", s.logPrefix())
 				}
 
-				logrus.Infof("%s, received farm id = %d, ip = %s", s.logPrefix(), farmId, farmIp)
+				logrus.Debugf("%s, received farm id = %d, ip = %s", s.logPrefix(), farmId, farmIp)
 			} else {
 				errCode, err := response.ReadByte()
 				if err != nil {
@@ -68,4 +68,8 @@ func (s *ShardListPing) Play(gatewayClient, agentClient *client.Client, globalSt
 
 func (s ShardListPing) Name() string {
 	return "shard-list-ping"
+}
+
+func (s *ShardListPing) Clone() Flow {
+	return &ShardListPing{isPlaying: false}
 }
